@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Game Hub</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        
+        .header {
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            color: #f1c40f;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+        }
+        
+        .balance-display {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+        
+        .games-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            max-width: 900px;
+            margin-bottom: 40px;
+        }
+        
+        .game-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            width: 200px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border-color: #f1c40f;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .game-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        
+        .game-title {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #f1c40f;
+        }
+        
+        .help-section {
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: 20px auto;
+            text-align: left;
+        }
+        
+        .help-section h2 {
+            color: #f1c40f;
+            border-bottom: 1px solid #f1c40f;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎰 CASINO GAME HUB 🎲</h1>
+        <div class="balance-display">
+            Your Balance: $<span id="global-balance">1000</span>
+        </div>
+    </div>
+    
+    <div class="games-container">
+        <a href="slots.html" class="game-card">
+            <div class="game-icon">🎰</div>
+            <h2 class="game-title">Slot Machine</h2>
+            <p>Classic 3-reel slots with jackpots</p>
+        </a>
+        
+        <a href="roulette.html" class="game-card">
+            <div class="game-icon">🎡</div>
+            <h2 class="game-title">Roulette</h2>
+            <p>European roulette wheel</p>
+        </a>
+        
+        <a href="blackjack.html" class="game-card">
+            <div class="game-icon">🃏</div>
+            <h2 class="game-title">Blackjack</h2>
+            <p>Beat the dealer to 21</p>
+        </a>
+        
+        <a href="poker.html" class="game-card">
+            <div class="game-icon">♠️</div>
+            <h2 class="game-title">Video Poker</h2>
+            <p>Five-card draw poker</p>
+        </a>
+    </div>
+    
+    <div class="help-section">
+        <h2>How to Play</h2>
+        <p><strong>Shared Balance:</strong> Your money carries over between all games!</p>
+        
+        <h3>Slot Machine</h3>
+        <p>Match symbols across the reels to win. Three diamonds wins the jackpot!</p>
+        
+        <h3>Roulette</h3>
+        <p>Bet on numbers, colors, or ranges. Number bets pay 35:1!</p>
+        
+        <h3>Blackjack</h3>
+        <p>Get closer to 21 than the dealer without busting. Blackjack pays 3:2!</p>
+        
+        <h3>Video Poker</h3>
+        <p>Make the best poker hand you can. Royal flush pays 250:1!</p>
+    </div>
+
+    <script>
+        // Initialize global balance
+        if (!localStorage.getItem('casinoBalance')) {
+            localStorage.setItem('casinoBalance', '1000');
+        }
+        document.getElementById('global-balance').textContent = localStorage.getItem('casinoBalance');
+    </script>
+</body>
+</html>

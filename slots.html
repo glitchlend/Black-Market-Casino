@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Slot Machine</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a2e;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        
+        .container {
+            text-align: center;
+            background-color: #16213e;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+        
+        h1 {
+            color: #f1c40f;
+            margin-top: 0;
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+            font-size: 2.5rem;
+        }
+        
+        .balance {
+            margin-top: 20px;
+            font-size: 20px;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        .slot-machine {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            perspective: 1000px;
+        }
+        
+        .reel {
+            width: 100px;
+            height: 150px;
+            background-color: #e74c3c;
+            margin: 0 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            font-weight: bold;
+            color: white;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+        
+        .reel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.4) 100%);
+            border-radius: 10px;
+            z-index: 2;
+        }
+        
+        .controls {
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #f1c40f;
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:hover {
+            background-color: #f39c12;
+            transform: scale(1.05);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        button:disabled {
+            background-color: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .bet-controls {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .bet-amount {
+            font-size: 18px;
+            margin: 0 15px;
+            min-width: 100px;
+            display: inline-block;
+        }
+        
+        .bet-button {
+            padding: 8px 15px;
+            font-size: 16px;
+            margin: 0 5px;
+            width: 40px;
+        }
+        
+        .win-message {
+            height: 30px;
+            margin: 15px 0;
+            font-size: 24px;
+            color: #2ecc71;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+            transition: all 0.3s;
+        }
+        
+        .high-score {
+            font-size: 18px;
+            color: #f1c40f;
+            margin-top: 10px;
+        }
+        
+        /* Animation classes */
+        .win-animation {
+            animation: pulse 0.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+        
+        .jackpot-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,215,0,0.3) 0%, rgba(255,215,0,0) 70%);
+            z-index: 0;
+            pointer-events: none;
+            animation: jackpotGlow 2s infinite alternate;
+        }
+        
+        @keyframes jackpotGlow {
+            from { opacity: 0.3; }
+            to { opacity: 0.7; }
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+            z-index: 0;
+        }
+        
+        .reel-spin {
+            animation: reelSpin 0.1s infinite;
+        }
+        
+        @keyframes reelSpin {
+            0% { transform: rotateX(0deg); }
+            100% { transform: rotateX(360deg); }
+        }
+        
+        .back-button {
+            margin-top: 20px;
+            background: #3498db;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .back-button:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 SUPER SLOT MACHINE 💰</h1>
+        
+        <div class="balance">
+            <div>Balance: $<span id="balance">1000</span></div>
+            <div class="high-score">High Score: $<span id="high-score">0</span></div>
+        </div>
+        
+        <div class="bet-controls">
+            <button class="bet-button" id="decrease-bet">-</button>
+            <span class="bet-amount">Bet: $<span id="bet-amount">10</span></span>
+            <button class="bet-button" id="increase-bet">+</button>
+        </div>
+        
+        <div class="slot-machine">
+            <div class="reel" id="reel1">🍒</div>
+            <div class="reel" id="reel2">🍋</div>
+            <div class="reel" id="reel3">🍊</div>
+        </div>
+        
+        <div class="win-message" id="win-message"></div>
+        
+        <div class="controls">
+            <button id="spin-button">SPIN ($<span id="spin-cost">10</span>)</button>
+        </div>
+        
+        <a href="index.html" class="back-button">← Back to Game Hub</a>
+    </div>
+
+    <!-- Audio elements -->
+    <audio id="spin-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-slot-machine-spin-1930.mp3" preload="auto"></audio>
+    <audio id="win-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
+    <audio id="jackpot-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-coins-handling-1939.mp3" preload="auto"></audio>
+    <audio id="click-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>
+
+    <script>
+        // Game symbols
+        const symbols = ['🍒', '🍋', '🍊', '🍇', '🍉', '7️⃣', '🔔', '💎'];
+        
+        // Game state
+        let balance = parseInt(localStorage.getItem('casinoBalance')) || 1000;
+        let currentBet = 10;
+        let isSpinning = false;
+        let highScore = localStorage.getItem('slotHighScore') || 0;
+        
+        // DOM elements
+        const reel1 = document.getElementById('reel1');
+        const reel2 = document.getElementById('reel2');
+        const reel3 = document.getElementById('reel3');
+        const spinButton = document.getElementById('spin-button');
+        const balanceDisplay = document.getElementById('balance');
+        const betAmountDisplay = document.getElementById('bet-amount');
+        const winMessage = document.getElementById('win-message');
+        const increaseBetButton = document.getElementById('increase-bet');
+        const decreaseBetButton = document.getElementById('decrease-bet');
+        const highScoreDisplay = document.getElementById('high-score');
+        const spinCostDisplay = document.getElementById('spin-cost');
+        
+        // Audio elements
+        const spinSound = document.getElementById('spin-sound');
+        const winSound = document.getElementById('win-sound');
+        const jackpotSound = document.getElementById('jackpot-sound');
+        const clickSound = document.getElementById('click-sound');
+        
+        // Initialize the game
+        function init() {
+            highScoreDisplay.textContent = highScore;
+            updateDisplay();
+            
+            // Event listeners
+            spinButton.addEventListener('click', spin);
+            increaseBetButton.addEventListener('click', () => {
+                playSound(clickSound);
+                changeBet(5);
+            });
+            decreaseBetButton.addEventListener('click', () => {
+                playSound(clickSound);
+                changeBet(-5);
+            });
+        }
+        
+        // Play sound
+        function playSound(sound) {
+            sound.currentTime = 0;
+            sound.play().catch(e => console.log("Audio play failed:", e));
+        }
+        
+        // Spin the reels
+        function spin() {
+            if (isSpinning || balance < currentBet) return;
+            
+            isSpinning = true;
+            balance -= currentBet;
+            updateDisplay();
+            winMessage.textContent = '';
+            winMessage.classList.remove('win-animation');
+            
+            // Play spin sound
+            playSound(spinSound);
+            
+            // Disable buttons during spin
+            spinButton.disabled = true;
+            increaseBetButton.disabled = true;
+            decreaseBetButton.disabled = true;
+            
+            // Add spinning animation
+            reel1.classList.add('reel-spin');
+            reel2.classList.add('reel-spin');
+            reel3.classList.add('reel-spin');
+            
+            // Spin each reel with different durations for more realistic effect
+            spinReel(reel1, 1000 + Math.random() * 500);
+            spinReel(reel2, 1500 + Math.random() * 500);
+            spinReel(reel3, 2000 + Math.random() * 500, checkResult);
+        }
+        
+        // Spin a single reel
+        function spinReel(reel, duration, callback = null) {
+            const startTime = Date.now();
+            const endTime = startTime + duration;
+            
+            function updateReel() {
+                const currentTime = Date.now();
+                const progress = (currentTime - startTime) / duration;
+                
+                if (progress >= 1) {
+                    // Final symbol
+                    const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                    reel.textContent = randomSymbol;
+                    reel.classList.remove('reel-spin');
+                    
+                    if (callback) callback();
+                    return;
+                }
+                
+                // Show random symbol during spin
+                const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                reel.textContent = randomSymbol;
+                
+                // Slow down toward the end
+                const delay = progress < 0.8 ? 50 : 100 + Math.random() * 100;
+                setTimeout(updateReel, delay);
+            }
+            
+            updateReel();
+        }
+        
+        // Check the result after all reels stop
+        function checkResult() {
+            const value1 = reel1.textContent;
+            const value2 = reel2.textContent;
+            const value3 = reel3.textContent;
+            
+            // Check for wins
+            let winnings = 0;
+            let isJackpot = false;
+            
+            if (value1 === value2 && value2 === value3) {
+                // All three match (big win)
+                if (value1 === '💎') {
+                    winnings = currentBet * 10; // Diamond jackpot
+                    isJackpot = true;
+                } else if (value1 === '7️⃣') {
+                    winnings = currentBet * 5; // 7's pay well
+                } else {
+                    winnings = currentBet * 3; // Regular triple
+                }
+            } else if (value1 === value2 || value2 === value3 || value1 === value3) {
+                // Two match (small win)
+                winnings = currentBet * 2;
+            }
+            
+            if (winnings > 0) {
+                balance += winnings;
+                winMessage.textContent = `You won $${winnings}!`;
+                winMessage.classList.add('win-animation');
+                
+                // Play appropriate sound
+                if (isJackpot) {
+                    playSound(jackpotSound);
+                    createJackpotAnimation();
+                } else {
+                    playSound(winSound);
+                }
+                
+                // Create confetti for any win
+                createConfetti();
+                
+                // Update high score if needed
+                if (balance > highScore) {
+                    highScore = balance;
+                    highScoreDisplay.textContent = highScore;
+                    localStorage.setItem('slotHighScore', highScore);
+                }
+            }
+            
+            updateDisplay();
+            isSpinning = false;
+            spinButton.disabled = false;
+            increaseBetButton.disabled = false;
+            decreaseBetButton.disabled = false;
+            
+            // Update global balance
+            localStorage.setItem('casinoBalance', balance.toString());
+        }
+        
+        // Create jackpot animation
+        function createJackpotAnimation() {
+            const jackpot = document.createElement('div');
+            jackpot.className = 'jackpot-animation';
+            document.body.appendChild(jackpot);
+            
+            setTimeout(() => {
+                jackpot.remove();
+            }, 3000);
+        }
+        
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#f1c40f', '#e74c3c', '#2ecc71', '#3498db', '#9b59b6'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = -10 + 'px';
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                document.body.appendChild(confetti);
+                
+                // Animate confetti
+                const animation = confetti.animate([
+                    { top: '-10px', opacity: 1, transform: `rotate(${Math.random() * 360}deg)` },
+                    { top: '100vh', opacity: 0, transform: `rotate(${Math.random() * 360}deg)` }
+                ], {
+                    duration: 2000 + Math.random() * 3000,
+                    easing: 'cubic-bezier(0.1, 0.8, 0.9, 1)'
+                });
+                
+                animation.onfinish = () => confetti.remove();
+            }
+        }
+        
+        // Change the bet amount
+        function changeBet(amount) {
+            const newBet = currentBet + amount;
+            if (newBet >= 5 && newBet <= balance) {
+                currentBet = newBet;
+                updateDisplay();
+            }
+        }
+        
+        // Update the display
+        function updateDisplay() {
+            balanceDisplay.textContent = balance;
+            betAmountDisplay.textContent = currentBet;
+            spinCostDisplay.textContent = currentBet;
+            
+            // Disable buttons when appropriate
+            spinButton.disabled = isSpinning || balance < currentBet;
+            increaseBetButton.disabled = isSpinning || currentBet + 5 > balance;
+            decreaseBetButton.disabled = isSpinning || currentBet - 5 < 5;
+        }
+        
+        // Start the game
+        init();
+    </script>
+</body>
+</html>

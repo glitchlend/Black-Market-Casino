@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roulette Game</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a2e;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .container {
+            text-align: center;
+            background-color: #16213e;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #f1c40f;
+            margin-top: 0;
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+        }
+        
+        .balance {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .roulette-wheel {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: #e74c3c;
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7);
+            border: 5px solid #333;
+        }
+        
+        .wheel-center {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: #f1c40f;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            border: 3px solid #333;
+        }
+        
+        .wheel-number {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transform-origin: 0 0;
+            left: 50%;
+            top: 0;
+        }
+        
+        .betting-grid {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 2px;
+            margin: 20px 0;
+        }
+        
+        .bet-number {
+            background: #2ecc71;
+            padding: 10px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+        
+        .bet-number:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.7);
+        }
+        
+        .bet-number.zero {
+            background: #3498db;
+            grid-column: span 2;
+        }
+        
+        .bet-number.red {
+            background: #e74c3c;
+        }
+        
+        .bet-number.black {
+            background: #2c3e50;
+            color: white;
+        }
+        
+        .bet-options {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        
+        .bet-type {
+            background: #9b59b6;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .bet-type:hover {
+            background: #8e44ad;
+            transform: scale(1.05);
+        }
+        
+        .controls {
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #f1c40f;
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background-color: #f39c12;
+            transform: scale(1.05);
+        }
+        
+        button:disabled {
+            background-color: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .bet-amount {
+            margin: 20px 0;
+        }
+        
+        .win-message {
+            height: 30px;
+            margin: 15px 0;
+            font-size: 1.2rem;
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        
+        .back-button {
+            margin-top: 20px;
+            background: #3498db;
+        }
+        
+        .back-button:hover {
+            background: #2980b9;
+        }
+        
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(3600deg); }
+        }
+        
+        .spinning {
+            animation: spin 4s cubic-bezier(0.17, 0.67, 0.12, 0.99) forwards;
+        }
+        
+        .selected {
+            box-shadow: 0 0 15px gold;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎡 Roulette Wheel 🎡</h1>
+        
+        <div class="balance">
+            <div>Balance: $<span id="balance">500</span></div>
+            <div>Current Bet: $<span id="current-bet">0</span></div>
+        </div>
+        
+        <div class="roulette-wheel" id="wheel">
+            <div class="wheel-center"></div>
+            <!-- Numbers will be added by JavaScript -->
+        </div>
+        
+        <div class="win-message" id="win-message"></div>
+        
+        <div class="bet-amount">
+            <button class="bet-button" id="decrease-bet">-</button>
+            <span>Bet Amount: $<span id="bet-amount">10</span></span>
+            <button class="bet-button" id="increase-bet">+</button>
+        </div>
+        
+        <div class="betting-grid" id="betting-grid">
+            <!-- Numbers will be added by JavaScript -->
+        </div>
+        
+        <div class="bet-options">
+            <div class="bet-type" data-type="red">Red</div>
+            <div class="bet-type" data-type="black">Black</div>
+            <div class="bet-type" data-type="even">Even</div>
+            <div class="bet-type" data-type="odd">Odd</div>
+            <div class="bet-type" data-type="1-18">1-18</div>
+            <div class="bet-type" data-type="19-36">19-36</div>
+        </div>
+        
+        <div class="controls">
+            <button id="spin-button">SPIN</button>
+            <button id="clear-bets">CLEAR BETS</button>
+        </div>
+        
+        <button class="back-button" onclick="window.location.href='index.html'">← Back to Game Hub</button>
+    </div>
+
+    <script>
+        // Roulette numbers with their colors (0 is green, others alternate red/black)
+        const rouletteNumbers = [
+            { number: 0, color: 'green' },
+            { number: 32, color: 'red' }, { number: 15, color: 'black' },
+            { number: 19, color: 'red' }, { number: 4, color: 'black' },
+            { number: 21, color: 'red' }, { number: 2, color: 'black' },
+            { number: 25, color: 'red' }, { number: 17, color: 'black' },
+            { number: 34, color: 'red' }, { number: 6, color: 'black' },
+            { number: 27, color: 'red' }, { number: 13, color: 'black' },
+            { number: 36, color: 'red' }, { number: 11, color: 'black' },
+            { number: 30, color: 'red' }, { number: 8, color: 'black' },
+            { number: 23, color: 'red' }, { number: 10, color: 'black' },
+            { number: 5, color: 'red' }, { number: 24, color: 'black' },
+            { number: 16, color: 'red' }, { number: 33, color: 'black' },
+            { number: 1, color: 'red' }, { number: 20, color: 'black' },
+            { number: 14, color: 'red' }, { number: 31, color: 'black' },
+            { number: 9, color: 'red' }, { number: 22, color: 'black' },
+            { number: 18, color: 'red' }, { number: 29, color: 'black' },
+            { number: 7, color: 'red' }, { number: 28, color: 'black' },
+            { number: 12, color: 'red' }, { number: 35, color: 'black' },
+            { number: 3, color: 'red' }, { number: 26, color: 'black' }
+        ];
+        
+        // Game state
+        let balance = 500;
+        let betAmount = 10;
+        let currentBet = 0;
+        let bets = {};
+        let isSpinning = false;
+        
+        // DOM elements
+        const wheel = document.getElementById('wheel');
+        const bettingGrid = document.getElementById('betting-grid');
+        const balanceDisplay = document.getElementById('balance');
+        const currentBetDisplay = document.getElementById('current-bet');
+        const betAmountDisplay = document.getElementById('bet-amount');
+        const winMessage = document.getElementById('win-message');
+        const spinButton = document.getElementById('spin-button');
+        const clearBetsButton = document.getElementById('clear-bets');
+        const decreaseBetButton = document.getElementById('decrease-bet');
+        const increaseBetButton = document.getElementById('increase-bet');
+        
+        // Initialize the game
+        function init() {
+            createWheel();
+            createBettingGrid();
+            setupEventListeners();
+            updateDisplay();
+        }
+        
+        // Create the roulette wheel with numbers
+        function createWheel() {
+            const angle = 360 / rouletteNumbers.length;
+            
+            rouletteNumbers.forEach((num, index) => {
+                const numberElement = document.createElement('div');
+                numberElement.className = 'wheel-number';
+                numberElement.textContent = num.number;
+                numberElement.style.transform = `rotate(${angle * index}deg)`;
+                numberElement.style.color = num.color === 'black' ? 'white' : 'black';
+                numberElement.style.backgroundColor = num.color === 'red' ? '#e74c3c' : 
+                                                   num.color === 'black' ? '#2c3e50' : '#2ecc71';
+                wheel.appendChild(numberElement);
+            });
+        }
+        
+        // Create the betting grid
+        function createBettingGrid() {
+            // Add 0 first
+            const zero = document.createElement('div');
+            zero.className = 'bet-number zero';
+            zero.textContent = '0';
+            zero.dataset.number = '0';
+            bettingGrid.appendChild(zero);
+            
+            // Add 1-36 in 3 columns
+            for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 12; col++) {
+                    const number = row + (col * 3) + 1;
+                    const numInfo = rouletteNumbers.find(n => n.number === number);
+                    if (numInfo) {
+                        const numberElement = document.createElement('div');
+                        numberElement.className = `bet-number ${numInfo.color}`;
+                        numberElement.textContent = number;
+                        numberElement.dataset.number = number;
+                        bettingGrid.appendChild(numberElement);
+                    }
+                }
+            }
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Number bets
+            document.querySelectorAll('.bet-number').forEach(el => {
+                el.addEventListener('click', () => placeBet(el.dataset.number, 'number'));
+            });
+            
+            // Special bets
+            document.querySelectorAll('.bet-type').forEach(el => {
+                el.addEventListener('click', () => placeBet(el.dataset.type, 'special'));
+            });
+            
+            // Controls
+            spinButton.addEventListener('click', spinWheel);
+            clearBetsButton.addEventListener('click', clearBets);
+            decreaseBetButton.addEventListener('click', () => changeBet(-5));
+            increaseBetButton.addEventListener('click', () => changeBet(5));
+        }
+        
+        // Place a bet
+        function placeBet(target, type) {
+            if (isSpinning || balance < betAmount) return;
+            
+            // Add to bets
+            if (!bets[target]) {
+                bets[target] = { amount: 0, type };
+            }
+            bets[target].amount += betAmount;
+            currentBet += betAmount;
+            balance -= betAmount;
+            
+            // Highlight the bet
+            if (type === 'number') {
+                document.querySelector(`.bet-number[data-number="${target}"]`).classList.add('selected');
+            } else {
+                document.querySelector(`.bet-type[data-type="${target}"]`).classList.add('selected');
+            }
+            
+            updateDisplay();
+        }
+        
+        // Spin the wheel
+        function spinWheel() {
+            if (isSpinning || currentBet === 0) return;
+            
+            isSpinning = true;
+            spinButton.disabled = true;
+            clearBetsButton.disabled = true;
+            winMessage.textContent = '';
+            
+            // Spin animation
+            wheel.classList.add('spinning');
+            
+            // Determine result after spin
+            setTimeout(() => {
+                const result = rouletteNumbers[Math.floor(Math.random() * rouletteNumbers.length)];
+                showResult(result);
+            }, 4000);
+        }
+        
+        // Show the result and calculate winnings
+        function showResult(result) {
+            wheel.classList.remove('spinning');
+            
+            // Calculate winnings
+            let winnings = 0;
+            
+            for (const [target, bet] of Object.entries(bets)) {
+                if (bet.type === 'number') {
+                    if (parseInt(target) === result.number) {
+                        winnings += bet.amount * 35;
+                    }
+                } else {
+                    switch(target) {
+                        case 'red':
+                            if (result.color === 'red') winnings += bet.amount * 2;
+                            break;
+                        case 'black':
+                            if (result.color === 'black') winnings += bet.amount * 2;
+                            break;
+                        case 'even':
+                            if (result.number !== 0 && result.number % 2 === 0) winnings += bet.amount * 2;
+                            break;
+                        case 'odd':
+                            if (result.number % 2 === 1) winnings += bet.amount * 2;
+                            break;
+                        case '1-18':
+                            if (result.number >= 1 && result.number <= 18) winnings += bet.amount * 2;
+                            break;
+                        case '19-36':
+                            if (result.number >= 19 && result.number <= 36) winnings += bet.amount * 2;
+                            break;
+                    }
+                }
+            }
+            
+            // Update balance
+            balance += winnings;
+            
+            // Show result
+            if (winnings > 0) {
+                winMessage.textContent = `The ball landed on ${result.number} ${result.color}. You won $${winnings}!`;
+                winMessage.style.color = '#2ecc71';
+            } else {
+                winMessage.textContent = `The ball landed on ${result.number} ${result.color}. Try again!`;
+                winMessage.style.color = '#e74c3c';
+            }
+            
+            // Reset for next round
+            setTimeout(() => {
+                clearBets();
+                isSpinning = false;
+                spinButton.disabled = false;
+                updateDisplay();
+            }, 3000);
+        }
+        
+        // Clear all bets
+        function clearBets() {
+            bets = {};
+            currentBet = 0;
+            
+            // Remove highlights
+            document.querySelectorAll('.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            updateDisplay();
+        }
+        
+        // Change bet amount
+        function changeBet(amount) {
+            const newBet = betAmount + amount;
+            if (newBet >= 5 && newBet <= balance) {
+                betAmount = newBet;
+                updateDisplay();
+            }
+        }
+        
+        // Update the display
+        function updateDisplay() {
+            balanceDisplay.textContent = balance;
+            currentBetDisplay.textContent = currentBet;
+            betAmountDisplay.textContent = betAmount;
+            
+            // Disable buttons when appropriate
+            spinButton.disabled = isSpinning || currentBet === 0 || balance === 0;
+            clearBetsButton.disabled = isSpinning || currentBet === 0;
+            decreaseBetButton.disabled = betAmount - 5 < 5;
+            increaseBetButton.disabled = betAmount + 5 > balance;
+        }
+        
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
